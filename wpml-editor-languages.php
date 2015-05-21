@@ -8,14 +8,14 @@
  * registers the activation and deactivation functions, and defines a function
  * that starts the plugin.
  *
- * @link              http://example.com
+ * @link              https://ozthegreat.io/wpml-editor-languages
  * @since             1.0.0
  * @package           wpml-editor-languages
  *
  * @wordpress-plugin
  * Plugin Name:       WPML Editor Languages
- * Plugin URI:        http://ozthegreat.io/wpml-editor-languages
- * Description:       Allows editiors to be restricted to a certain language in WPML
+ * Plugin URI:        https://ozthegreat.io/wpml-editor-languages
+ * Description:       Allows editiors to be restricted to languages with WPML
  * Version:           1.0.0
  * Author:            OzTheGreat
  * Author URI:        http://ozthegreat.io
@@ -29,6 +29,22 @@
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
+
+// Define plugin specifc constants used throughout
+DEFINE('WPML_EDITOR_LANGUAGES_VERSION', '1.0.0');
+DEFINE('WPML_EDITOR_LANGUAGES_PLUGIN_NAME', 'wpml-editor-languages');
+DEFINE('WPML_EDITOR_LANGUAGES_TEXT_DOMAIN', WPML_EDITOR_LANGUAGES_PLUGIN_NAME);
+
+/**
+ * The code that runs during plugin activation.
+ * This action is documented in includes/class-wpml-editor-languages-activator.php
+ */
+function activate_wpml_editor_languages() {
+	require_once plugin_dir_path( __FILE__ ) . 'includes/class-wpml-editor-languages-activator.php';
+	Wpml_Editor_Languages_Activator::activate();
+}
+
+register_activation_hook( __FILE__, 'activate_wpml_editor_languages' );
 
 /**
  * The core plugin class that is used to define internationalization,
