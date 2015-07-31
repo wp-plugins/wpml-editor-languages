@@ -3,7 +3,7 @@
 /**
  * The admin-specific functionality of the plugin.
  *
- * @link       https://ozthegreat.io/wpml-editor-languages
+ * @link       https://ozthegreat.io/wordpress/wpml-editor-languages
  * @since      1.0.0
  *
  * @package    Wpml_Editor_Languages
@@ -63,8 +63,8 @@ class Wpml_Editor_Languages_Admin {
 	 */
 	public function set_allowed_languages() {
 		// Admins can edit any language
-	 	if ( current_user_can( 'manage_options' ) )
-	 		return;
+		if ( current_user_can( 'manage_options' ) )
+			return;
 
 		global $sitepress;
 
@@ -94,7 +94,7 @@ class Wpml_Editor_Languages_Admin {
 
 			wp_die( sprintf(
 				wp_kses(
-					__( 'You cannot modify or delete this entry. <a href="%s">Back to home</a>', WPML_EDITOR_LANGUAGES_TEXT_DOMAIN ),
+					__( 'You cannot modify or delete this entry. <a href="%s">Back to home</a>', 'wpml-editor-languages' ),
 					array(  'a' => array( 'href' => true, 'title' => true, 'target' => true ) )
 				),
 				esc_url_raw( admin_url() . '?lang=' . key( $user_languages ) )
@@ -121,12 +121,12 @@ class Wpml_Editor_Languages_Admin {
 		if ( empty( $user->ID ) || current_user_can( 'manage_options' ) )
 			return $redirect_to;
 
-	 	if ( $user_language = get_user_meta( $user->ID, 'icl_admin_language', true ) )
-	 	{
-	 		return esc_url_raw( apply_filters( 'wpmlel_admin_redirect', admin_url() . '?lang=' . $user_language ) );
-	 	}
+		if ( $user_language = get_user_meta( $user->ID, 'icl_admin_language', true ) )
+		{
+			return esc_url_raw( apply_filters( 'wpmlel_admin_redirect', admin_url() . '?lang=' . $user_language ) );
+		}
 
-	 	return $redirect_to;
+		return $redirect_to;
 	}
 
 	/**
@@ -139,11 +139,19 @@ class Wpml_Editor_Languages_Admin {
 	 */
 	public function add_user_languages_persmissions( $user ) {
 		// If not an Admin, they can't edit it
-	 	if ( ! current_user_can( 'manage_options' ) || ! function_exists("icl_get_languages") )
-	 		return;
+		if ( ! current_user_can( 'manage_options' ) || ! function_exists( 'icl_get_languages' ) )
+			return;
 
-		$languages      = icl_get_languages('skip_missing =N&orderby =KEY&order =DIR&link_empty_to =str');
-		$user_languages = array_flip( $this->get_user_allowed_languages( $user->ID ) );
+		global $pagenow;
+
+		$languages = icl_get_languages( 'skip_missing=N&orderby=KEY&order=DIR&link_empty_to=str' );
+
+		if ( $pagenow == 'user-new.php' ) {
+			global $sitepress;
+			$user_languages = array( $sitepress->get_default_language() => true );
+		} else {
+			$user_languages = array_flip( $this->get_user_allowed_languages( $user->ID ) );
+		}
 
 		include 'partials/wpml-editor-languages-user-languages-select.php';
 	}
@@ -164,14 +172,14 @@ class Wpml_Editor_Languages_Admin {
 		$languages_allowed = ! empty( $_POST['languages_allowed'] ) ? $_POST['languages_allowed'] : array();
 		$languages_allowed = (array) apply_filters( 'wpmlel_save_user_languages', $languages_allowed, $user_id );
 
-		update_user_meta( $user_id,'languages_allowed', sanitize_text_field( json_encode( $languages_allowed ) ) );
+		update_user_option( $user_id,'languages_allowed', sanitize_text_field( json_encode( $languages_allowed ) ) );
 
 		$languages_allowed = array_flip( $languages_allowed );
 
 		// Check the default admin language is in the Users' allowed languages
 		if ( ! isset( $languages_allowed[ get_user_meta( $user_id, 'icl_admin_language', true ) ] ) )
 		{
-			update_user_meta( $user_id, 'icl_admin_language', key( $languages_allowed ) );
+			update_user_option( $user_id, 'icl_admin_language', key( $languages_allowed ) );
 		}
 	}
 
@@ -183,7 +191,7 @@ class Wpml_Editor_Languages_Admin {
 	 * @return  array
 	 */
 	public function get_user_allowed_languages( $user_id ) {
-		$user_languages = json_decode( get_the_author_meta( 'languages_allowed', $user_id ) );
+		$user_languages = json_decode( get_user_option( 'languages_allowed', $user_id ) );
 		$user_languages = apply_filters( 'wpmlel_user_languages', $user_languages, $user_id );
 		return ! empty( $user_languages ) && is_array( $user_languages ) ? $user_languages : array();
 	}
