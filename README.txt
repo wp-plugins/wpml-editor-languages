@@ -41,7 +41,7 @@ not allowed to.
 
 = 1.0.1 =
 * WPMU compatible
-* Added Language box to he User create with the default language pre-populated
+* Added Language box to the user create page with the default language pre-populated
 * WordPress 4.2.3 version check
 * Fix language domain
 * Covert spaces to tabs
